@@ -2,3 +2,4 @@
 ^renv\.lock$
 ^fuzzyNgram\.Rproj$
 ^\.Rproj\.user$
+^LICENSE\.md$
