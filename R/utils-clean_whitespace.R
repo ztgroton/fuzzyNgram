@@ -15,7 +15,7 @@ clean_whitespace <- function(x) {
   if (missing(x)) {stop("`x` is missing in call to `clean_whitespace`")}
 
   # Validate Input Expectations
-  if (!isTRUE(validate.character(x))) {
+  if (!isTRUE(validate_input.character(x, non_empty = TRUE, throw_err = FALSE))) {
     stop("`x` must be a valid character in call to `clean_whitespace`")
   }
 
