@@ -2,12 +2,12 @@
 % Please edit documentation in R/fct-gen_ngrams.R
 \name{gen_ngrams}
 \alias{gen_ngrams}
-\title{gen List of N-Grams from a Character Vector of Strings}
+\title{gen List of N-Grams from a List of Tokens (stored as character vectors)}
 \usage{
-gen_ngrams(string, n = 3, split = " ")
+gen_ngrams(tokens, n = 3, split = " ")
 }
 \arguments{
-\item{string}{character}
+\item{tokens}{character}
 
 \item{n}{integer}
 
@@ -17,10 +17,10 @@ gen_ngrams(string, n = 3, split = " ")
 list
 }
 \description{
-gen List of N-Grams from a Character Vector of Strings
+gen List of N-Grams from a List of Tokens (stored as character vectors)
 }
 \examples{
 \dontrun{
- output_ngrams <- gen_ngrams(string = input_char_vec, n = 3, split = ' ')
+ output_ngrams <- gen_ngrams(tokens = token_list, n = 3, split = ' ')
 }
 }
