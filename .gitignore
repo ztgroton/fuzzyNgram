@@ -49,3 +49,6 @@ po/*~
 # RStudio Connect folder
 rsconnect/
 .Rproj.user
+
+# Example Data
+inst/test_data/*

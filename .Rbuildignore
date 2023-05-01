@@ -4,3 +4,4 @@
 ^\.Rproj\.user$
 ^LICENSE\.md$
 ^R/helper_functions\.R$
+^inst/test_data$
