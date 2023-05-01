@@ -79,6 +79,7 @@ validate_input.logical <- function(obj, not_empty = FALSE, is_scalar = FALSE, al
 #' @param is_scalar logical - (TRUE/FALSE) specifies if 'length(obj)' must equal 1
 #' @param allow_na logical - (TRUE/FALSE) specifies if NA elements are allowed in 'obj'
 #' @param check_names logical - (TRUE/FALSE) specifies if 'names(obj)' should meet same criteria as 'obj'
+#' @param is_whole logical - (TRUE/FALSE) specifies if 'obj' must be whole number
 #' @param throw_err logical - (TRUE/FALSE) specifies if function should return or throw error
 #' @param ... r ellipsis
 #'
@@ -88,7 +89,7 @@ validate_input.logical <- function(obj, not_empty = FALSE, is_scalar = FALSE, al
 #' \dontrun{
 #' is_valid <- validate_input.numeric(obj = input, ...)
 #' }
-validate_input.numeric <- function(obj, not_empty = FALSE, is_scalar = FALSE, allow_na = FALSE, check_names = FALSE, throw_err = TRUE, ...) {
+validate_input.numeric <- function(obj, not_empty = FALSE, is_scalar = FALSE, allow_na = FALSE, check_names = FALSE, is_whole = FALSE, throw_err = TRUE, ...) {
 
   expect_data_type(
     obj = obj,
@@ -98,6 +99,21 @@ validate_input.numeric <- function(obj, not_empty = FALSE, is_scalar = FALSE, al
     allow_na = allow_na,
     check_names = check_names,
     throw_err = throw_err
-  )
+  ) -> res
+
+  if (isTRUE(is_whole)) {
+    if (!isTRUE((obj %% 1) == 0)) {
+      if (isTRUE(throw_err)) {
+        message <- "`obj` must be whole number in call to `validate_input.numeric`"
+        stop(message, call. = FALSE)
+      } else {
+        return(FALSE)
+      }
+    } else {
+      return(isTRUE(res))
+    }
+  } else {
+    return(isTRUE(res))
+  }
 
 }

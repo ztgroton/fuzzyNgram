@@ -10,6 +10,7 @@
   is_scalar = FALSE,
   allow_na = FALSE,
   check_names = FALSE,
+  is_whole = FALSE,
   throw_err = TRUE,
   ...
 )
@@ -24,6 +25,8 @@
 \item{allow_na}{logical - (TRUE/FALSE) specifies if NA elements are allowed in 'obj'}
 
 \item{check_names}{logical - (TRUE/FALSE) specifies if 'names(obj)' should meet same criteria as 'obj'}
+
+\item{is_whole}{logical - (TRUE/FALSE) specifies if 'obj' must be whole number}
 
 \item{throw_err}{logical - (TRUE/FALSE) specifies if function should return or throw error}
 
