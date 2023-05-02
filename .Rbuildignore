@@ -5,3 +5,7 @@
 ^LICENSE\.md$
 ^R/helper_functions\.R$
 ^inst/test_data$
+
+^R/fct-token_tf\.R$
+^R/fct-token_idf\.R$
+^R/fct-token_tf_idf\.R$
