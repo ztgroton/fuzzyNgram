@@ -33,7 +33,7 @@ validate_input <- function(obj, ...) {UseMethod("validate_input", obj)}
 validate_input.character <- function(obj,
                                      not_empty = FALSE,
                                      is_scalar = FALSE,
-                                     allow_na = FALSE,
+                                     allow_na = TRUE,
                                      check_names = FALSE,
                                      throw_err = TRUE, ...) {
 
@@ -69,7 +69,7 @@ validate_input.character <- function(obj,
 validate_input.logical <- function(obj,
                                    not_empty = FALSE,
                                    is_scalar = FALSE,
-                                   allow_na = FALSE,
+                                   allow_na = TRUE,
                                    check_names = FALSE,
                                    throw_err = TRUE, ...) {
 
@@ -106,7 +106,7 @@ validate_input.logical <- function(obj,
 validate_input.numeric <- function(obj,
                                    not_empty = FALSE,
                                    is_scalar = FALSE,
-                                   allow_na = FALSE,
+                                   allow_na = TRUE,
                                    check_names = FALSE,
                                    is_whole = FALSE,
                                    throw_err = TRUE, ...) {
@@ -162,7 +162,7 @@ validate_input.list <- function(obj,
                                 list_not_empty = TRUE,
                                 elem_not_empty = FALSE,
                                 elem_is_scalar = FALSE,
-                                elem_allow_na = FALSE,
+                                elem_allow_na = TRUE,
                                 elem_check_names = FALSE,
                                 throw_err = TRUE, ...) {
 

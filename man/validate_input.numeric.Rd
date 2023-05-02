@@ -8,7 +8,7 @@
   obj,
   not_empty = FALSE,
   is_scalar = FALSE,
-  allow_na = FALSE,
+  allow_na = TRUE,
   check_names = FALSE,
   is_whole = FALSE,
   throw_err = TRUE,

@@ -10,7 +10,7 @@
   list_not_empty = TRUE,
   elem_not_empty = FALSE,
   elem_is_scalar = FALSE,
-  elem_allow_na = FALSE,
+  elem_allow_na = TRUE,
   elem_check_names = FALSE,
   throw_err = TRUE,
   ...
