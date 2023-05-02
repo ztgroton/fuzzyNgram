@@ -12,7 +12,10 @@ RoxygenNote: 7.2.3
 Imports: 
     bigrquery,
     DBI,
+    dplyr,
+    magrittr,
     purrr,
     rlang,
     stringr,
-    testthat
+    testthat,
+    tictoc

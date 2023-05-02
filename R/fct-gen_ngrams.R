@@ -1,6 +1,8 @@
 
 #' gen List of N-Grams from a List of Tokens (stored as character vectors)
-#'
+#' 
+#' @importFrom rlang .data
+#' 
 #' @param tokens character
 #' @param n integer
 #' @param split character
@@ -38,9 +40,17 @@ gen_ngrams <- function(tokens, n = 3, split = ' ') {
   }
 
   # Main Logic
+  
+  # Group `tokens` by TOKEN_COUNT
+  tokens_by_count <- split(tokens, purrr::map_dbl(tokens, function(t) {length(t)}))
+  
+  # Save Distinct 'TOKEN_COUNT' Values for Later Use
+  unq_token_counts <- as.character(unique(names(tokens_by_count)))
 
   # * Generate Start/End Indices for NGRAM generation
   indicies <- list()
+  n <- min(as.numeric(max(as.numeric(unq_token_counts), na.rm = TRUE)), n)
+  #unq_token_counts <- as.character(seq(1, n))
 
   for (m in 1:n) {
     for (i in 1:(n-m+1)) {
@@ -58,6 +68,9 @@ gen_ngrams <- function(tokens, n = 3, split = ' ') {
   })
 
   names(indicies) <- index_names
+  
+  # Group Indicies by Max Index Value
+  indicies_by_maxval <- split(indicies, purrr::map_dbl(indicies, function(t) {max(t)}))
 
   # Generate NGRAM Length Lookup Vector
   ngram_length <- purrr::map_dbl(indicies, function(x) {
@@ -69,51 +82,99 @@ gen_ngrams <- function(tokens, n = 3, split = ' ') {
   })
 
   names(ngram_length) <- index_names
-
-  # * Use Indices to generate NGRAMs
-  ngrams <- purrr::map(names(indicies), function(index_name) {
-
-    # Fetch Index Values
-    index_val <- indicies[[index_name]]
-
-    # Generate sequence used for subsetting `tokens` elements
-    sub_seq <- seq(index_val[1], index_val[2])
-
-    # Use `sub_seq` to subset all character vectors in `tokens`
-    res <- purrr::map(tokens, function(t) {return(t[sub_seq])})
-
-    # Return `res`
-    return(res)
-
-  })
-
-  names(ngrams) <- names
-
-  #### FUTURE WORK
-  ######## NEED TO CONVERT `ngrams` LIST ELEMENTS INTO DATA FRAMES
-  ######## EACH LIST ELEMENT DATA FRAME MUST CONTAIN TWO COLUMNS: ORIG_ROW_NUM, TOKENS
-  ######## COALESCE BY COMMON NGRAM LENGTH, THEN REMOVE DUPLICATE ROWS (ACROSS BOTH COLUMNS)
-  ######## ADD ANY APPROPRIATE SUMMARY & MEASURE COLUMNS TO EACH LIST ELEMENT DATA FRAME
-
+  
   # Create Lookup List of `names(indicies)` by common NGRAM length
   ngram_length_lookup <- split(names(ngram_length), ngram_length)
-
-  # * Coalesce `ngrams` by common NGRAM length
-  ngrams_by_length <- purrr::map(ngram_length_lookup, function(x) {
-
-    # Subset `ngrams` list
-    ngrams_x <- ngrams[x]
-
-    # Coalesce `ngrams_x` into single character vector
-    ngrams_x <- purrr::reduce(ngrams_x, `c`)
-
+  
+  # * Use Indicies to Generate NGRAMs
+  ngrams <- purrr::map(unq_token_counts, function(token_count) {
+    
+    # Get All Tokens with Length 'token_count'
+    tokens_x <- tokens_by_count[[token_count]]
+    
+    # Get All Indicies with 'maxval' <= 'token_count'
+    valid_maxvals <- as.numeric(unq_token_counts)
+    valid_maxvals <- valid_maxvals[valid_maxvals <= as.numeric(token_count)]
+    valid_maxvals <- as.character(valid_maxvals)
+    
+    indicies_x <- indicies_by_maxval[valid_maxvals]
+    
+    # Unnest 'indicies_x' into list with single level
+    name_indicies_x <- purrr::reduce(purrr::map(indicies_x, function(t){names(t)}), `c`)
+    val_indicies_x <- purrr::reduce(indicies_x, `c`)
+    names(val_indicies_x) <- name_indicies_x
+    
+    indicies_x <- val_indicies_x
+    
+    rm(name_indicies_x)
+    rm(val_indicies_x)
+    
+    # Apply Selected Indicies to Selected Tokens
+    ngrams_x <- purrr::map(indicies_x, function(index_val) {
+      
+      # Generate sequence used for subsetting `tokens` elements
+      sub_seq <- seq(index_val[1], index_val[2])
+      
+      # Use `sub_seq` to subset all character vectors in `tokens`
+      res <- purrr::map(tokens_x, function(t) {return(t[sub_seq])})
+      return(res)
+      
+    })
+    
+    names(ngrams_x) <- names(indicies_x)
+    
     # Return `ngrams_x`
     return(ngrams_x)
-
+    
   })
-
-
-  browser()
+  
+  names(ngrams) <- unq_token_counts
+  
+  # * Convert List Elements of 'ngrams' to DataFrames
+  ngrams <- purrr::map(ngrams, function(x) {
+    
+    # Save 'names(x)' for later use
+    names_x <- names(x)
+    
+    frames_x <- purrr::map(names(x), function(t) {
+      
+      x_t <- x[[t]]
+      
+      return(data.frame(
+        orig_row_num = names(x_t),
+        position = t, 
+        value = I(x_t), 
+        stringsAsFactors = FALSE
+      ))
+      
+    })
+    names(frames_x) <- names_x
+    
+    # Return 'frames_x'
+    return(frames_x)
+    
+  })
+  
+  # Coalesce `ngrams`
+  ngrams <- purrr::map(ngrams, function(x) {
+    purrr::reduce(x, `rbind`)
+  }) %>% 
+    purrr::reduce(`rbind`)
+  
+  # Convert 'ngrams$orig_row_num' to numeric
+  ngrams$orig_row_num <- as.numeric(ngrams$orig_row_num)
+  
+  # Ensure All Rows are Unique
+  ngrams <- ngrams %>% 
+    dplyr::distinct(
+      .data$orig_row_num, 
+      .data$position, 
+      .keep_all = TRUE
+    ) %>% 
+    dplyr::arrange(.data$orig_row_num)
+  
+  # Remove Pre-Existing Row Names from 'ngrams'
+  rownames(ngrams) <- NULL
 
   # Return `ngrams`
   return(ngrams)

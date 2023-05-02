@@ -40,15 +40,31 @@ text2ngrams <- function(string, n = 3, split = ' ') {
   # Main Logic
 
   # * Clean-Up White Space in Input Character Vector 'string'
+  cat("Cleaning Whitespace... ")
+  tictoc::tic()
   clean_string <- clean_ws(string)
+  tictoc::toc()
 
   # * Generate List of Tokens from Input Character Vector 'string'
+  cat("Generating Tokens from Text... ")
+  tictoc::tic()
   token_list <- gen_tokens(string = clean_string, split = split)
+  tictoc::toc()
 
   # * Generate List of NGRAMs from Token List
+  cat("Generating N-Grams from Tokens... ")
+  tictoc::tic()
   ngram_list <- gen_ngrams(tokens = token_list, n = n, split = split)
+  tictoc::toc()
+  
+  # Compile Results 
+  results <- list(
+    input_text = string,
+    tokens = token_list, 
+    ngrams = ngram_list
+  )
 
   # Return Results
-  return(ngram_list)
+  return(results)
 
 }
