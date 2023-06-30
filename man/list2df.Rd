@@ -4,12 +4,10 @@
 \alias{list2df}
 \title{Convert List into Formatted DataFrame}
 \usage{
-list2df(x, elem_type)
+list2df(x)
 }
 \arguments{
 \item{x}{list}
-
-\item{elem_type}{character}
 }
 \value{
 data.frame
@@ -19,6 +17,6 @@ Convert List into Formatted DataFrame
 }
 \examples{
 \dontrun{
-output_dataframe <- list2df(x = input_list, elem_type = 'character')
+output_dataframe <- list2df(x = input_list)
 }
 }

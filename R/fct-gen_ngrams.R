@@ -143,7 +143,8 @@ gen_ngrams <- function(tokens, n = 3, split = ' ') {
       return(data.frame(
         orig_row_num = names(x_t),
         position = t, 
-        value = I(x_t), 
+        list_value = I(x_t), 
+        str_value = purrr::map_chr(I(x_t), function(x){paste(x, collapse = split)}),
         stringsAsFactors = FALSE
       ))
       
@@ -170,8 +171,33 @@ gen_ngrams <- function(tokens, n = 3, split = ' ') {
       .data$orig_row_num, 
       .data$position, 
       .keep_all = TRUE
+    )
+  
+  # Add 'NGRAM Size' as New Column
+  ngrams <- ngrams %>% 
+    dplyr::mutate(size = purrr::map_dbl(.data$list_value, function(t){length(t)}))
+  
+  # Add 'Original Text' as New Column
+  ngrams_max_size <- ngrams %>% 
+    dplyr::group_by(.data$orig_row_num) %>% 
+    dplyr::summarise(size = max(.data$size)) %>% 
+    dplyr::ungroup()
+  
+  ngram_orig_text <- ngrams %>% 
+    dplyr::semi_join(
+      ngrams_max_size, 
+      by = c('orig_row_num', 'size')
     ) %>% 
-    dplyr::arrange(.data$orig_row_num)
+    dplyr::mutate(orig_text = purrr::map_chr(.data$list_value, function(t){paste0(t, collapse = split)})) %>% 
+    dplyr::rename(orig_size = .data$size) %>% 
+    dplyr::select(.data$orig_row_num, .data$orig_text, .data$orig_size)
+  
+  ngrams <- ngrams %>% 
+    dplyr::left_join(ngram_orig_text, by = 'orig_row_num')
+  
+  # Order Rows in 'ngrams'
+  ngrams <- ngrams %>% 
+    dplyr::arrange(.data$orig_row_num, .data$size, .data$position)
   
   # Remove Pre-Existing Row Names from 'ngrams'
   rownames(ngrams) <- NULL

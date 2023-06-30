@@ -1,0 +1,11 @@
+
+-------------------------------------------------------------------------------
+
+create `ngram_tf`, `ngram_idf` tables
+
+create `data2ngram` and `ngram2table` psql procedures 
+  Compare outputs with R Functions
+
+create `search_ngram` psql procedures
+
+-------------------------------------------------------------------------------

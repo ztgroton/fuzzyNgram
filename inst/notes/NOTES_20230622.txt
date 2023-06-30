@@ -1,0 +1,29 @@
+
+-------------------------------------------------------------------------------
+
+proc_data
+	- Generate `dataset_name` using input name w/ Timestamp
+	- Upsert `dataset_name`, return `dataset_id` for later use
+	- Store (`dataset_name`, `dataset_id`) for later use, using updated table contents
+	- Use `dataset_id` along with column names to upsert(?) update `columns`
+	- Store mapping of (dataset_id, column_name)->id for later use, using updated table contents
+	- Use `dataset_id` along with dense (1:nrow) to upsert(?) update `records`
+	- Generate contents (dataset_id, record_id), using updated table contents
+
+prog_ngram 
+	- Use distinct ngram values to upsert(?) update `ngram_data`
+	- Use mapping of (ngram_value)->id and `dataset_id`, update `ngram_dataset`
+	- Store mapping of (ngram_value)->id for later use, using updated table contents
+
+	- Use `df2ngrams` to generate gathered n-gram data from original data
+
+	- Left-Join `dataset` table
+	- Left-Join `columns` table
+	- Left-Join `records` table
+	- Left-Join `ngram_data` table
+	- Validate all 'id' values are non-na, and/or custom contstraints 
+
+	- Use output of `df2ngrams` to upsert(?) update `ngram`
+
+-------------------------------------------------------------------------------
+

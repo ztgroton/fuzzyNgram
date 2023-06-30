@@ -1,0 +1,33 @@
+
+-------------------------------------------------------------------------------
+
+COLUMN SELECTOR 
+
+COLUMN ASSOCIATOR 
+
+TF (ngram, document, N, mode)
+
+IDF (ngram, corpus, N, mode)
+
+
+TF IDF RECORD 
+
+  ORDER BY SELECTED COLUMNS, TF IDF RANK DESC
+
+-------------------------------------------------------------------------------
+
+Generate N-Gram Mapping Set 
+  docs = set of `documents`
+  corpus = name of saved `corpus` of documents
+  colmap = named character vector associating `docs` and `corpus` column names
+  colrank = ordered character vector of unique `corpus` column names in `colmap`
+
+-------------------------------------------------------------------------------
+
+colmap (item_name, package_type, brand_name) ex.
+
+calc_tf()
+
+------------------------------------------------------------------------------- 
+
+calc_tf_idf <- function(doc1, doc2) 

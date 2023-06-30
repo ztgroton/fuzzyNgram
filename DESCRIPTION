@@ -12,10 +12,18 @@ RoxygenNote: 7.2.3
 Imports: 
     bigrquery,
     DBI,
+    dbTools,
+    dbx,
     dplyr,
+    glue,
     magrittr,
     purrr,
+    readr,
+    readxl,
     rlang,
     stringr,
     testthat,
     tictoc
+Depends: 
+    R (>= 2.10)
+LazyData: true

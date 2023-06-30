@@ -57,6 +57,9 @@ text2ngrams <- function(string, n = 3, split = ' ') {
   ngram_list <- gen_ngrams(tokens = token_list, n = n, split = split)
   tictoc::toc()
   
+  # Convert `token_list` to formatted data.frame
+  #token_list <- list2df(token_list)
+  
   # Compile Results 
   results <- list(
     input_text = string,
@@ -67,4 +70,4 @@ text2ngrams <- function(string, n = 3, split = ' ') {
   # Return Results
   return(results)
 
-}
+} 
