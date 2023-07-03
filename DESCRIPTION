@@ -14,6 +14,7 @@ Imports:
     DBI,
     dbTools,
     dbx,
+    digest,
     dplyr,
     glue,
     magrittr,

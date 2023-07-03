@@ -11,3 +11,5 @@
 ^R/fct-token_tf_idf\.R$
 ^data-raw$
 ^inst/archive$
+
+^\.RData$

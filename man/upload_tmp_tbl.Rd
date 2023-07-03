@@ -8,8 +8,6 @@ upload_tmp_tbl(data)
 }
 \arguments{
 \item{data}{data.frame}
-
-\item{schema}{character}
 }
 \value{
 character

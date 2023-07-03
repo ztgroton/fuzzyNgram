@@ -4,10 +4,7 @@
 \alias{init_twm_ngram_tables}
 \title{Initialize 'TWM N-Gram Dictionary' PSQL Tables}
 \usage{
-init_twm_ngram_tables(schema)
-}
-\arguments{
-\item{schema}{character}
+init_twm_ngram_tables()
 }
 \value{
 logical

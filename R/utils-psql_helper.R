@@ -1,4 +1,48 @@
 
+#' Kill All DB Connections to 'twm_ngram_dict'
+#'
+#' @return R Object
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' kill_db_connections()
+#' }
+kill_db_connections <- function() {
+  
+  # Setup DB Connection
+  conn <- dbTools::psql_db_connect('postgres')
+  
+  # Initialize Empty Results 
+  results <- NULL
+  
+  tryCatch({
+    
+    results <- DBI::dbGetQuery(
+      conn = conn, 
+      glue::glue_sql(
+        "SELECT pg_terminate_backend(pg_stat_activity.pid)
+         FROM pg_stat_activity
+         WHERE pg_stat_activity.datname = 'twm_ngram_dict' 
+         AND pid <> pg_backend_pid();"
+        , .con = conn
+      )
+    )
+    
+  }, error = function(e) {
+    results <<- NULL
+    message(e)
+  })
+  
+  # Close DB Connection 
+  DBI::dbDisconnect(conn)
+  rm(conn)
+  
+  # Return Results
+  invisible(results)
+  
+}
+
 #' Destroy 'TWM N-Gram Dictionary' PSQL Database
 #'
 #' @return TRUE/FALSE
@@ -137,8 +181,6 @@ init_twm_ngram_schema <- function() {
 #' 
 #' @importFrom rlang .data 
 #' 
-#' @param schema character
-#' 
 #' @return logical
 #' @export
 #'
@@ -147,17 +189,7 @@ init_twm_ngram_schema <- function() {
 #' init_twm_ngram_tables()
 #' status <- init_twm_ngram_tables()
 #' }
-init_twm_ngram_tables <- function(schema) {
-  
-  # Validate Inputs 
-  if (missing(schema)) {
-    stop("`schema` is missing in call to `init_twm_ngram_tables`")
-  }
-  
-  # Validate Input Expectations 
-  if (!isTRUE(schema == 'corpus') && !isTRUE(schema == 'document')) {
-    stop("`schema` must equal 'corpus' or 'document' in call to `init_twm_ngram_tables`")
-  }
+init_twm_ngram_tables <- function() {
   
   # Setup DB Connection 
   conn <- dbTools::psql_db_connect('twm_ngram_dict')
@@ -186,7 +218,7 @@ init_twm_ngram_tables <- function(schema) {
       tictoc::tic()
       
       # Initialize SQL DDL File Path
-      ddl_file_path <- system.file(paste0('sql/psql/ddl/create_table/', schema, '/', table_name, '.sql'), package = 'fuzzyNgram')
+      ddl_file_path <- system.file(paste0('sql/psql/ddl/create_table/', table_name, '.sql'), package = 'fuzzyNgram')
       
       # Fetch SQL DDL Statement
       qry_ddl <- readr::read_file(ddl_file_path)
@@ -215,8 +247,6 @@ init_twm_ngram_tables <- function(schema) {
 #' 
 #' @importFrom rlang .data 
 #' 
-#' @param schema character
-#' 
 #' @return logical
 #' @export
 #'
@@ -225,17 +255,7 @@ init_twm_ngram_tables <- function(schema) {
 #' init_twm_ngram_indexes()
 #' status <- init_twm_ngram_indexes()
 #' }
-init_twm_ngram_indexes <- function(schema) {
-  
-  # Validate Inputs 
-  if (missing(schema)) {
-    stop("`schema` is missing in call to `init_twm_ngram_indexes`")
-  }
-  
-  # Validate Input Expectations 
-  if (!isTRUE(schema == 'corpus') && !isTRUE(schema == 'document')) {
-    stop("`schema` must equal 'corpus' or 'document' in call to `init_twm_ngram_indexes`")
-  }
+init_twm_ngram_indexes <- function() {
   
   # Setup DB Connection 
   conn <- dbTools::psql_db_connect('twm_ngram_dict')
@@ -243,7 +263,7 @@ init_twm_ngram_indexes <- function(schema) {
   # MAIN LOGIC 
   
   # Initialize SQL DDL Folder Path 
-  ddl_folder_path <- system.file(paste0('sql/psql/ddl/create_index/', schema, '/'), package = 'fuzzyNgram') 
+  ddl_folder_path <- system.file(paste0('sql/psql/ddl/create_index/'), package = 'fuzzyNgram') 
   
   # List SQL DDL Folder Contents
   ddl_folder_contents <- list.files(path = ddl_folder_path, pattern = '.sql')
@@ -257,6 +277,146 @@ init_twm_ngram_indexes <- function(schema) {
   
   # Conditionally Initialize Schema Tables
   cat(paste0("\nInitializing Indexes... \n"))
+  tictoc::tic()
+  
+  index_status <- purrr::map_lgl(ddl_folder_contents, function(x) {
+    
+    tryCatch({
+      
+      # Store Table Name
+      cat(paste0("Processing '", x, "'... "))
+      tictoc::tic()
+      
+      # Initialize SQL DDL File Path
+      ddl_file_path <- file.path(ddl_folder_path, x)
+      
+      # Fetch SQL DDL Statement
+      qry_ddl <- readr::read_file(ddl_file_path)
+      
+      # Execute DDL Statement 
+      suppressMessages({DBI::dbExecute(conn, qry_ddl)})
+      tictoc::toc()
+      
+      return(TRUE)
+      
+    }, error = function(e) {
+      message(e)
+      return(FALSE)
+    })
+    
+  })
+  names(index_status) <- ddl_folder_contents
+  tictoc::toc()
+  
+  # Return Result Status
+  invisible(index_status)
+  
+}
+
+#' Initialize 'TWM N-Gram Dictionary' PSQL Functions
+#' 
+#' @importFrom rlang .data 
+#' 
+#' @return logical
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' init_twm_ngram_func()
+#' status <- init_twm_ngram_func()
+#' }
+init_twm_ngram_func <- function() {
+  
+  # Setup DB Connection 
+  conn <- dbTools::psql_db_connect('twm_ngram_dict')
+  
+  # MAIN LOGIC 
+  
+  # Initialize SQL DDL Folder Path 
+  ddl_folder_path <- system.file(paste0('sql/psql/ddl/create_func/'), package = 'fuzzyNgram') 
+  
+  # List SQL DDL Folder Contents
+  ddl_folder_contents <- list.files(path = ddl_folder_path, pattern = '.sql')
+  
+  if (!isTRUE(length(ddl_folder_contents) > 0)) {
+    stop("`ddl_folder_contents` must have non-zero length in call to `init_twm_ngram_func`")
+  }
+  
+  # Setup 'ngram_corpus_indexes' 
+  index_status <- vector(mode = 'logical', length = length(ddl_folder_contents))
+  
+  # Conditionally Initialize Stored Functions
+  cat(paste0("\nInitializing Functions... \n"))
+  tictoc::tic()
+  
+  index_status <- purrr::map_lgl(ddl_folder_contents, function(x) {
+    
+    tryCatch({
+      
+      # Store Table Name
+      cat(paste0("Processing '", x, "'... "))
+      tictoc::tic()
+      
+      # Initialize SQL DDL File Path
+      ddl_file_path <- file.path(ddl_folder_path, x)
+      
+      # Fetch SQL DDL Statement
+      qry_ddl <- readr::read_file(ddl_file_path)
+      
+      # Execute DDL Statement 
+      suppressMessages({DBI::dbExecute(conn, qry_ddl)})
+      tictoc::toc()
+      
+      return(TRUE)
+      
+    }, error = function(e) {
+      message(e)
+      return(FALSE)
+    })
+    
+  })
+  names(index_status) <- ddl_folder_contents
+  tictoc::toc()
+  
+  # Return Result Status
+  invisible(index_status)
+  
+}
+
+#' Initialize 'TWM N-Gram Dictionary' PSQL Procedures
+#' 
+#' @importFrom rlang .data 
+#' 
+#' @return logical
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' init_twm_ngram_proc()
+#' status <- init_twm_ngram_proc()
+#' }
+init_twm_ngram_proc <- function() {
+  
+  # Setup DB Connection 
+  conn <- dbTools::psql_db_connect('twm_ngram_dict')
+  
+  # MAIN LOGIC 
+  
+  # Initialize SQL DDL Folder Path 
+  ddl_folder_path <- system.file(paste0('sql/psql/ddl/create_proc/'), package = 'fuzzyNgram') 
+  
+  # List SQL DDL Folder Contents
+  ddl_folder_contents <- list.files(path = ddl_folder_path, pattern = '.sql')
+  
+  if (!isTRUE(length(ddl_folder_contents) > 0)) {
+    stop("`ddl_folder_contents` must have non-zero length in call to `init_twm_ngram_proc`")
+  }
+  
+  # Setup 'ngram_corpus_indexes' 
+  index_status <- vector(mode = 'logical', length = length(ddl_folder_contents))
+  
+  # Conditionally Initialize Stored Functions
+  cat(paste0("\nInitializing Procedures... \n"))
   tictoc::tic()
   
   index_status <- purrr::map_lgl(ddl_folder_contents, function(x) {
@@ -343,7 +503,6 @@ gen_unq_name <- function(use_date = TRUE) {
 #' Upload R Data.Frame to PSQL Table in 'public' schema
 #'
 #' @param data data.frame 
-#' @param schema character
 #'
 #' @return character
 #' @export
@@ -419,5 +578,89 @@ upload_tmp_tbl <- function(data) {
   
   # Return `tbl_name` 
   return(tbl_name)
+  
+}
+
+#' Drop Temporary Table from Public Schema
+#'
+#' @param tbl character
+#'
+#' @return NULL
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' drop_tmp_tbl(tbl = 'tbl_fasdvjcaf')
+#' }
+drop_tmp_tbl <- function(tbl) {
+  
+  # Validate Inputs
+  if (missing(tbl)) {stop("`tbl` is missing in call to `upload_tmp_tbl`")}
+  
+  # Validate Input Expectations
+  
+  # * `tbl`
+  if (!isTRUE(is.character(tbl)) || !isTRUE(length(tbl) == 1) || isTRUE(is.na(tbl))) {
+    stop("`tbl` must be character vector of length 1 in call to `drop_tmp_tbl`")
+  }
+  
+  # MAIN LOGIC
+  
+  # Setup DB Connection 
+  conn <- dbTools::psql_db_connect('twm_ngram_dict')
+  
+  # Initialize Table ID
+  tbl_id <- DBI::Id(schema = 'public', table = tbl)
+  
+  if (isTRUE(DBI::dbExistsTable(conn, tbl_id))) {
+    DBI::dbExecute(conn, glue::glue_sql("DROP TABLE public.{`tbl`}", .con = conn))
+  } else {
+    message(paste0("Table '", tbl, "' does not exist - NO ACTION TAKEN"))
+  }
+  
+  # Close DB Connection
+  DBI::dbDisconnect(conn)
+  rm(conn)
+  
+  # Return NULL
+  invisible(NULL)
+  
+}
+
+#' Rebuild DB 
+#'
+#' @return NULL
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'  clean_slate_db()
+#' }
+clean_slate_db <- function() {
+  
+  # Kill All DB Connections
+  kill_db_connections()
+  
+  # Destroy DB (if exists)
+  destroy_twm_ngram_db()
+  
+  # Initialize Empty DB 
+  init_twm_ngram_db()
+  
+  # Initialize DB Schemas
+  init_twm_ngram_schema()
+  
+  # Initialize DB Tables
+  init_twm_ngram_tables()
+  
+  # Initialize DB Indexes
+  init_twm_ngram_indexes()
+  
+  # Initialize DB Functions and Procedures
+  init_twm_ngram_func()
+  init_twm_ngram_proc()
+  
+  # Return NULL
+  invisible(NULL)
   
 }

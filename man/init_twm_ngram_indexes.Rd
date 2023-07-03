@@ -4,10 +4,7 @@
 \alias{init_twm_ngram_indexes}
 \title{Initialize 'TWM N-Gram Dictionary' PSQL Indexes}
 \usage{
-init_twm_ngram_indexes(schema)
-}
-\arguments{
-\item{schema}{character}
+init_twm_ngram_indexes()
 }
 \value{
 logical

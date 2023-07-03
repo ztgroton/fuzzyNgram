@@ -15,7 +15,7 @@ BEGIN
     '  select '
     '  ROW_NUMBER() OVER() as row_num, '
     '  to_jsonb(t.*) as jsonb_col '
-    '  from %I.%I t '
+    '  from %I.%I t ' -- sch, tbl
     ') '
     ' '
     'select '

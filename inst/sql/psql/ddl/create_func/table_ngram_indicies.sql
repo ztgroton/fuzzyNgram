@@ -1,5 +1,5 @@
 
-CREATE OR REPLACE FUNCTION public.gen_ngram_indicies(n INTEGER, rolling BOOLEAN DEFAULT FALSE)
+CREATE OR REPLACE FUNCTION public.table_ngram_indicies(n INTEGER, rolling BOOLEAN DEFAULT FALSE)
   RETURNS TABLE (
     ngram_len INTEGER, 
     ind_start INTEGER, 
